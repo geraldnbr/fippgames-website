@@ -381,9 +381,14 @@ window.ECHOLOT_CONFIG = {"testMode":true,"admob":{"iosAppId":"ca-app-pub-6076511
   // Käufe, die später freigegeben werden (z. B. Familienfreigabe "Kaufanfrage") oder zurückerstattet wurden
   function hookPurchases() { listen(Purchases, "transactionUpdated", () => { iap.refreshOwned().then(() => { try { window.dispatchEvent(new Event("echolot-iap")); } catch (e) {} }); }); }
   function exitApp() { if (App && App.exitApp) App.exitApp(); }
+  /* ---------- Ton-Modus (iOS): lautlos respektieren, bis die Lautstärketasten gedrückt werden ---------- */
+  const audio = {
+    setMode(mode) { if (Games && os === "ios") { try { Games.setAudioMode({ mode }).catch(() => {}); } catch (e) {} } },
+    onVolumeButton(cb) { if (Games && os === "ios") listen(Games, "volumeButton", () => cb()); }
+  };
 
   window.Platform = {
-    native, os, config: CFG, storage, ads, iap, games, notify, openLegal, hookBack, exitApp, encodeScore, decodeScore,
+    native, os, config: CFG, storage, ads, iap, games, notify, audio, openLegal, hookBack, exitApp, encodeScore, decodeScore,
     version: CFG.version || "1.0.0",
     hideSplash() { if (Splash) Splash.hide().catch(() => {}); },
     /** Wird vom Spiel nach dem Laden aufgerufen. */
@@ -778,7 +783,15 @@ for (let y = 0; y < PH; y++) for (let x = 0; x < W; x++) VIG[y * W + x] = clamp(
 /* ---------- audio ---------- */
 let ac = null, master = null, windGain = null, windPan = null;
 // iOS: "playback" spielt auch bei Stummschalter (Spiel lebt vom Ton); ohne Musik "ambient", damit eigene Musik weiterlaufen kann
-function audioSessionType() { try { if (navigator.audioSession) navigator.audioSession.type = save.music ? "playback" : "ambient"; } catch (e) {} }
+// Ton wie bei Instagram: Mit Stummschalter erst leise; sobald die Lautstärketasten gedrückt werden,
+// spielt das Spiel auch im Lautlos-Modus. Ton/Musik im Spiel ausschalten macht es immer stumm.
+let volBoost = false;
+function audioSessionType() {
+  const mode = volBoost && (save.music || save.sound) ? "playback" : "ambient";
+  try { if (navigator.audioSession) navigator.audioSession.type = mode; } catch (e) {}
+  if (P && P.native && P.audio) P.audio.setMode(mode);
+}
+if (P && P.native && P.audio) P.audio.onVolumeButton(() => { if (!volBoost) { volBoost = true; audioSessionType(); } if (ac && ac.state !== "running") ac.resume().catch(() => {}); });
 function initAudio() {
   audioSessionType();
   if (ac) { if (ac.state !== "running") ac.resume().catch(() => {}); return; }
