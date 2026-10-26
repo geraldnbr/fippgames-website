@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Echolot – Sieh mit den Ohren</title>
+<meta name="description" content="Echolot: Ein Pixel-Höhlenspiel. Fledermaus Fipp sieht nur, was ihr Echo zeigt. Für iPhone und Android.">
+<link rel="icon" href="icon.png">
+<style>
+:root { --void: #070401; --soot: #120c05; --moss: #676e44; --sage: #9aac88; --bone: #d0d8b4; --brass: #d6a24a; }
+@font-face { font-family: "Silkscreen"; src: url("fonts/silkscreen-latin-400-normal.woff2") format("woff2"); font-display: swap; }
+html { background: var(--void); }
+body { margin: 0; color: var(--bone); background: var(--void); font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 40px 16px 56px; text-align: center; }
+img.icon { width: 160px; height: 160px; image-rendering: pixelated; border: 2px solid var(--brass); }
+h1 { font-family: "Silkscreen", monospace; font-weight: 400; font-size: 2.6rem; letter-spacing: 0.06em; margin: 20px 0 0; }
+.tag { font-family: "Silkscreen", monospace; color: var(--brass); margin: 4px 0 24px; }
+p { color: var(--sage); max-width: 56ch; margin: 0 auto 16px; }
+.btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 28px 0; }
+.btns a { font-family: "Silkscreen", monospace; text-decoration: none; padding: 12px 18px; border: 2px solid var(--brass); color: var(--void); background: var(--brass); }
+.btns a.alt { background: transparent; color: var(--bone); border-color: var(--moss); }
+footer { border-top: 1px solid #292210; margin-top: 40px; padding-top: 16px; font-size: 0.92rem; }
+footer a { color: var(--bone); margin: 0 8px; }
+</style>
+</head>
+<body>
+<main>
+  <img class="icon" src="icon.png" alt="Echolot App-Icon: Fledermaus Fipp vor Echo-Ringen">
+  <h1>ECHOLOT</h1>
+  <div class="tag">SIEH MIT DEN OHREN</div>
+  <p>Fledermaus Fipp sieht in der dunklen Höhle nur, was ihr Echo zeigt. Ruf, lausche, weich der Eule aus, löse Echo-Rätsel und tritt in Echo-Duellen gegen Bosse an. Nach fünf Welten wartet der Endlos-Modus mit wöchentlicher Weltrangliste.</p>
+  <div class="btns">
+    <a href="#" id="appstore" title="Link nach Freigabe durch Apple eintragen">App Store (bald)</a>
+    <a class="alt" href="spielen.html">Im Browser anspielen</a>
+  </div>
+  <footer>
+    <a href="datenschutz.html">Datenschutz</a>
+    <a href="impressum.html">Impressum</a>
+    <a href="nutzungsbedingungen.html">Nutzungsbedingungen</a>
+    <a href="mailto:support@fippgames.com">Support</a>
+  </footer>
+</main>
+</body>
+</html>
