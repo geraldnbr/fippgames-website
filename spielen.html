@@ -27,13 +27,17 @@ body {
   overflow: hidden;
 }
 #wrap {
+  position: fixed;
+  inset: 0;
   height: 100%;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 8px;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   box-sizing: border-box;
 }
 canvas {
@@ -751,20 +755,33 @@ const frameImg = g.createImageData(W, H);
 const F32 = new Uint32Array(frameImg.data.buffer);
 function fit() {
   const wrap = document.getElementById("wrap");
-  const aw = wrap.clientWidth - 32, ah = wrap.clientHeight - 16;
+  const cs = getComputedStyle(wrap);
+  const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight), padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  // Auf großen Bildschirmen (Browser) etwas Rand lassen, auf dem Handy die volle Breite nutzen
+  const big = window.innerWidth >= 600;
+  const aw = wrap.clientWidth - padX - (big ? 32 : 0), ah = wrap.clientHeight - padY - (big ? 16 : 0);
+  if (aw <= 0 || ah <= 0) return;
   let s = Math.min(aw / W, ah / H);
   if (s >= 3) s = Math.floor(s);
   screen.style.width = Math.floor(W * s) + "px";
   screen.style.height = Math.floor(H * s) + "px";
 }
 window.addEventListener("resize", fit);
+window.addEventListener("orientationchange", fit);
+window.addEventListener("pageshow", fit);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", fit);
+if (window.ResizeObserver) new ResizeObserver(fit).observe(document.getElementById("wrap"));
+[50, 250, 1000].forEach(t => setTimeout(fit, t));
 const VIG = new Float32Array(W * PH);
 for (let y = 0; y < PH; y++) for (let x = 0; x < W; x++) VIG[y * W + x] = clamp(1.18 - (((x - W / 2) / (W * 0.66)) ** 2 + ((y - PH / 2) / (PH * 0.62)) ** 2) * 0.75, 0.35, 1);
 
 /* ---------- audio ---------- */
 let ac = null, master = null, windGain = null, windPan = null;
+// iOS: "playback" spielt auch bei Stummschalter (Spiel lebt vom Ton); ohne Musik "ambient", damit eigene Musik weiterlaufen kann
+function audioSessionType() { try { if (navigator.audioSession) navigator.audioSession.type = save.music ? "playback" : "ambient"; } catch (e) {} }
 function initAudio() {
-  if (ac) { if (ac.state === "suspended") ac.resume(); return; }
+  audioSessionType();
+  if (ac) { if (ac.state !== "running") ac.resume().catch(() => {}); return; }
   try {
     ac = new (window.AudioContext || window.webkitAudioContext)();
     master = ac.createGain(); master.gain.value = save.sound ? 0.8 : 0; master.connect(ac.destination);
@@ -865,7 +882,7 @@ function musInit() {
   MUS.delay = dl; MUS.gain.connect(master);
   if (!MUS.timer) MUS.timer = setInterval(musTick, 30);
 }
-function setMusic(on) { save.music = on; persist(); if (MUS.gain) MUS.gain.gain.value = on ? 1 : 0; }
+function setMusic(on) { save.music = on; persist(); audioSessionType(); if (MUS.gain) MUS.gain.gain.value = on ? 1 : 0; }
 function musSet(name) {
   if (MUS.name === name) return;
   MUS.name = name; MUS.track = name ? prepTrack(TRACKS[name]) : null; MUS.step = 0; MUS.tg = MUS.track ? MUS.track.gain || 1 : 1;
@@ -2675,7 +2692,7 @@ window.addEventListener("keydown", e => {
 window.addEventListener("keyup", e => { const k = e.key.toLowerCase(); keys[k] = false; if ((k === "x" || k === "shift") && state === "play" && bat.charge > 0) { if (bat.charge > 0.35) fireBlast(); bat.charge = 0; } });
 document.addEventListener("visibilitychange", () => {
   if (document.hidden && (state === "play" || state === "duel")) setState("pause");
-  try { if (ac) { if (document.hidden) ac.suspend(); else ac.resume(); } } catch (e) {}
+  try { if (ac) { if (document.hidden) ac.suspend(); else { audioSessionType(); ac.resume().catch(() => {}); } } } catch (e) {}
 });
 function handleBack() {
   const ov = document.getElementById("legal-ov"); if (ov && !ov.hidden) { ov.hidden = true; return; }
