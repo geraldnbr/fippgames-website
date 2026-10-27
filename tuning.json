@@ -1,0 +1,12 @@
+{
+  "_hinweis": "Grenzen in der App: alleLevelMin 2-8, alleLevelMax bis 10, mindestMinuten 2-15, ersteLevelOhne 2-10",
+  "zwischenwerbung": {
+    "_hinweis": "Vollbild-Video nach geschafften Levels. aktiv=false schaltet sie ab.",
+    "aktiv": true,
+    "alleLevelMin": 3,
+    "alleLevelMax": 5,
+    "mindestMinuten": 4,
+    "ersteLevelOhne": 3
+  },
+  "werbeleiste": true
+}
